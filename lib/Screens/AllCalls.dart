@@ -13,7 +13,6 @@ import 'package:nirmiti_app/Utills/myColor.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:intl/intl.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
@@ -106,90 +105,107 @@ class _allcalls extends State<allcalls> {
           // Directory? apptempDir = await getExternalStorageDirectory();
           // String newDir = p.join(apptempDir!.path, newFileName);
           for (var file1 in files) {
-            if (date != null) {
-              for (CallLogEntry entry in callLogs) {
-                if (entry.callType == CallType.rejected) {
-                  //break;
-                } else if (entry.callType == CallType.missed) {
-                  //break;
-                } else if (entry.callType == CallType.outgoing &&
-                    entry.duration == 0) {
-                  //break;
-                } else {
-                  var callingtime1 =
-                      formatTimestampforpostaudio(entry.timestamp);
-                  var timeValue = int.parse(time) - int.parse(callingtime1);
-
-                  var finalcalltime = int.parse(callingtime1) + timeValue;
-                  String timePart = finalcalltime.toString();
-                  // Adjust the matching threshold if needed (e.g., +-1 minute)
-                  var calltime =
-                      '${timePart.substring(0, 2)}:${timePart.substring(2, 4)}:${timePart.substring(4, 6)}';
-                  if (calltime == date) {
-                    var callingtime =
-                        '${callingtime1.substring(0, 2)}-${callingtime1.substring(2, 4)}-${callingtime1.substring(4, 6)}';
-                    // String formattedDate =
-                    //     DateFormat('dd-MM-yyyy_HH-mm-ss').format(dateTime);
-                    String newFileName1 =
-                        'Callrecording_${calldate}_${callingtime}';
-                    String? mobileNo = entry.number;
-                    if (mobileNo != null && mobileNo.startsWith('+91')) {
-                      mobileNo = mobileNo.substring(3);
-                    } else {
-                      mobileNo;
-                    }
-                    String newFileName =
-                        'Callrecording_${mobileNo}_${calldate}_${callingtime}.wav';
-
-                    final File audioFile = File(files[i].path);
-                    List<int> fileBytes = await audioFile.readAsBytes();
-                    base64File = base64Encode(fileBytes);
-                    print("File" + base64File);
-
-                    List<Map<String, dynamic>> audiolist = files
-                        .map((entry) {
-                          {
-                            return {
-                              "file_name": newFileName,
-                              "file_base64": base64File
-                            };
+            if (await file1.exists()) {
+              if (date != null) {
+                for (CallLogEntry entry in callLogs) {
+                  if (entry.callType == CallType.rejected) {
+                    //break;
+                  } else if (entry.callType == CallType.missed) {
+                    //break;
+                  } else if (entry.callType == CallType.outgoing &&
+                      entry.duration == 0) {
+                    //break;
+                  } else {
+                    var callingtime1 =
+                        formatTimestampforpostaudio(entry.timestamp);
+                    var currentcallingDate =
+                        formatcurrentcalldate(entry.timestamp);
+                    if (calldate == currentcallingDate) {
+                      var timeValue = int.parse(time) - int.parse(callingtime1);
+                      var timevalue1 = int.parse(time) - timeValue;
+                      if (int.parse(callingtime1) == timevalue1) {
+                        var finalcalltime = int.parse(callingtime1) + timeValue;
+                        String timePart = finalcalltime.toString();
+                        // Adjust the matching threshold if needed (e.g., +-1 minute)
+                        var calltime =
+                            '${timePart.substring(0, 2)}:${timePart.substring(2, 4)}:${timePart.substring(4, 6)}';
+                        if (calltime == date) {
+                          var callingtime =
+                              '${callingtime1.substring(0, 2)}-${callingtime1.substring(2, 4)}-${callingtime1.substring(4, 6)}';
+                          // String formattedDate =
+                          //     DateFormat('dd-MM-yyyy_HH-mm-ss').format(dateTime);
+                          String newFileName1 =
+                              'Callrecording_${calldate}_${callingtime}';
+                          String? mobileNo = entry.number;
+                          if (mobileNo != null && mobileNo.startsWith('+91')) {
+                            mobileNo = mobileNo.substring(3);
+                          } else {
+                            mobileNo;
                           }
-                        })
-                        .cast<Map<String, dynamic>>()
-                        .toList();
-                    // await file.delete();
-                    final url =
-                        Uri.parse('https://nirmitiapps.in:3000/api/call-log');
-                    final response = await http.put(
-                      url,
-                      headers: <String, String>{
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer $token',
-                      },
-                      body: jsonEncode(audiolist[0]),
-                    );
-                    print(response.body);
-                    if (response.statusCode == 200) {
-                      await file1.delete();
-                      // Fluttertoast.showToast(
-                      //     msg: "Call recording files update sucees",
-                      //     toastLength: Toast.LENGTH_LONG,
-                      //     gravity: ToastGravity.CENTER,
-                      //     timeInSecForIosWeb: 20,
-                      //     backgroundColor: Colors.amber[200],
-                      //     textColor: MyColors.themecolor,
-                      //     fontSize: 12.0);
-                      print("Call recording files update sucees");
-                      // showAlertAndNavigateToLogin(context);
-                    }
+                          String newFileName =
+                              'Callrecording_${mobileNo}_${calldate}_${callingtime}.wav';
+                          if (await file1.exists()) {
+                            final File audioFile = File(files[i].path);
+                            List<int> fileBytes = await audioFile.readAsBytes();
+                            base64File = base64Encode(fileBytes);
+                            print("File" + base64File);
 
-                    //break; // Exit the loop once a match is found
+                            List<Map<String, dynamic>> audiolist = files
+                                .map((entry) {
+                                  {
+                                    return {
+                                      "file_name": newFileName,
+                                      "file_base64": base64File
+                                    };
+                                  }
+                                })
+                                .cast<Map<String, dynamic>>()
+                                .toList();
+                            // await file.delete();
+                            final url = Uri.parse(
+                                'https://nirmitiapps.in:3000/api/call-log');
+                            final response = await http.put(
+                              url,
+                              headers: <String, String>{
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': 'Bearer $token',
+                              },
+                              body: jsonEncode(audiolist[0]),
+                            );
+                            print(response.body);
+                            if (response.statusCode == 200) {
+                              await file1.delete();
+                              // Fluttertoast.showToast(
+                              //     msg: "Call recording files update sucees",
+                              //     toastLength: Toast.LENGTH_LONG,
+                              //     gravity: ToastGravity.CENTER,
+                              //     timeInSecForIosWeb: 20,
+                              //     backgroundColor: Colors.amber[200],
+                              //     textColor: MyColors.themecolor,
+                              //     fontSize: 12.0);
+                              print("Call recording files updated");
+                              // showAlertAndNavigateToLogin(context);
+                            }
+
+                            break; // Exit the loop once a match is found
+                          }
+                        } else {
+                          print("no audio file available");
+                        }
+                      } else {
+                        print("No mathcing Time found");
+                      }
+                    } else {
+                      print("No matching date found");
+                    }
                   }
                 }
+              } else {
+                print("No files Found");
               }
             } else {
-              print("No files Found");
+              print("no audio file available");
             }
           }
         }
@@ -245,18 +261,11 @@ class _allcalls extends State<allcalls> {
                   String newFilePath1 =
                       '${apptempDir.path}/${newFileName}'; // New file path in target directory
                   File newFile = await File(file.path).copy(newFilePath1);
-                  // Fluttertoast.showToast(
-                  //     msg: newFileName,
-                  //     toastLength: Toast.LENGTH_LONG,
-                  //     gravity: ToastGravity.CENTER,
-                  //     timeInSecForIosWeb: 10,
-                  //     backgroundColor: Colors.amber[200],
-                  //     textColor: MyColors.themecolor,
-                  //     fontSize: 12.0);
-                  print('Copied file: ${file.path} to $newFilePath1');
-                  print('Moved file: ${file.path} to $newFilePath1');
 
-                  print('File renamed to: $newFilePath1');
+                  // print('Copied file: ${file.path} to $newFilePath1');
+                  // print('Moved file: ${file.path} to $newFilePath1');
+
+                  // print('File renamed to: $newFilePath1');
 
                   await file.delete();
 
@@ -615,6 +624,15 @@ class _allcalls extends State<allcalls> {
     // Convert UTC to IST (IST is UTC+5:30)
     var dateIst = dateUtc.add(Duration(hours: 5, minutes: 30));
     return DateFormat('yyyy-MM-dd').format(dateIst);
+  }
+
+  String formatcurrentcalldate(int? timestamp) {
+    if (timestamp == null) return 'Unknown';
+    // Convert to DateTime in UTC
+    var dateUtc = DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: true);
+    // Convert UTC to IST (IST is UTC+5:30)
+    var dateIst = dateUtc.add(Duration(hours: 5, minutes: 30));
+    return DateFormat('dd-MM-yyyy').format(dateIst);
   }
 
   String formatTimestamp(int? timestamp) {

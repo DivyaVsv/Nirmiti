@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
-import 'package:path/path.dart' as p;
 import 'package:app_settings/app_settings.dart';
 import 'package:call_log/call_log.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:nirmiti_app/Screens/Dashboard.dart';
 import 'package:nirmiti_app/Screens/DefaultappSet.dart';
