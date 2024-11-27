@@ -88,6 +88,7 @@ class _allcalls extends State<allcalls> {
     Directory appDocDir1 = Directory('/storage/emulated/0/Recordings/Call/');
     if (await appDocDir1.exists()) {
       List<FileSystemEntity> files = appDocDir1.listSync().toList();
+
       if (files.isEmpty) {
         print("No Files Available");
       } else {
@@ -104,6 +105,7 @@ class _allcalls extends State<allcalls> {
           //String newPath = p.join(p.dirname(appDocDir.path), newFileName);
           // Directory? apptempDir = await getExternalStorageDirectory();
           // String newDir = p.join(apptempDir!.path, newFileName);
+
           for (var file1 in files) {
             if (await file1.exists()) {
               if (date != null) {
@@ -121,15 +123,30 @@ class _allcalls extends State<allcalls> {
                     var currentcallingDate =
                         formatcurrentcalldate(entry.timestamp);
                     if (calldate == currentcallingDate) {
+                      var timevalue1;
                       var timeValue = int.parse(time) - int.parse(callingtime1);
-                      var timevalue1 = int.parse(time) - timeValue;
+                      if (timeValue < 0) {
+                        timeValue = 0;
+                      } else {
+                        timevalue1 = int.parse(time) - timeValue;
+                      }
                       if (int.parse(callingtime1) == timevalue1) {
+                        var t1 = timevalue1.toString();
                         var finalcalltime = int.parse(callingtime1) + timeValue;
-                        String timePart = finalcalltime.toString();
+                        String timePart;
+                        if (finalcalltime.toString().length == 5) {
+                          var a = 0;
+                          timePart = a.toString() + finalcalltime.toString();
+                        } else {
+                          timePart = finalcalltime.toString();
+                        }
+
                         // Adjust the matching threshold if needed (e.g., +-1 minute)
-                        var calltime =
-                            '${timePart.substring(0, 2)}:${timePart.substring(2, 4)}:${timePart.substring(4, 6)}';
-                        if (calltime == date) {
+                        var currentcallrecordingtiming =
+                            '${time.substring(0, 2)}:${time.substring(2, 4)}:${time.substring(4, 6)}';
+                        // var currentcalltime =
+                        //     '${timePart.substring(0, 2)}:${timePart.substring(2, 4)}:${timePart.substring(4, 6)}';
+                        if (time == timePart) {
                           var callingtime =
                               '${callingtime1.substring(0, 2)}-${callingtime1.substring(2, 4)}-${callingtime1.substring(4, 6)}';
                           // String formattedDate =
@@ -175,20 +192,20 @@ class _allcalls extends State<allcalls> {
                             );
                             print(response.body);
                             if (response.statusCode == 200) {
-                              await file1.delete();
-                              // Fluttertoast.showToast(
-                              //     msg: "Call recording files update sucees",
-                              //     toastLength: Toast.LENGTH_LONG,
-                              //     gravity: ToastGravity.CENTER,
-                              //     timeInSecForIosWeb: 20,
-                              //     backgroundColor: Colors.amber[200],
-                              //     textColor: MyColors.themecolor,
-                              //     fontSize: 12.0);
+                              file1.delete();
+                              setState(() {
+                                files.clear();
+                                files = appDocDir1.listSync().toList();
+                                files.length;
+                                audiolist.clear();
+                              });
+
                               print("Call recording files updated");
+
                               // showAlertAndNavigateToLogin(context);
                             }
 
-                            break; // Exit the loop once a match is found
+                            // Exit the loop once a match is found
                           }
                         } else {
                           print("no audio file available");
@@ -207,7 +224,10 @@ class _allcalls extends State<allcalls> {
             } else {
               print("no audio file available");
             }
+
+            break;
           }
+          //break;
         }
       }
     } else if (await appDocDir.exists()) {
